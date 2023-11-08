@@ -38,10 +38,10 @@ func (st *TaskMySQL) FindById(id string) (t task.Task, err error) {
 // Save saves a task
 func (st *TaskMySQL) Save(t *task.Task) (err error) {
 	// query
-	query := "INSERT INTO `tasks` (`id`, `title`, `description`, `done`) VALUES (?, ?, ?, ?)"
+	query := "INSERT INTO `tasks` (`title`, `description`) VALUES (?, ?)"
 
 	// execute query
-	result, err := st.db.Exec(query, t.Id, t.Title, t.Description, t.Done)
+	result, err := st.db.Exec(query, t.Title, t.Description)
 	if err != nil {
 		return
 	}
