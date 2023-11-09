@@ -7,6 +7,5 @@ type Application interface {
 	// SetUp sets up the application
 	SetUp() (err error)
 	// TearDown tears down the application
-	// - close resources in reverse order (defer)
 	TearDown()
 }

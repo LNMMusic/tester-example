@@ -31,63 +31,74 @@ type ConfigApplicationDefault struct {
 }
 
 // NewApplicationDefault returns a new ApplicationDefault
-func NewApplicationDefault(cfg *ConfigApplicationDefault) *ApplicationDefault {
+func NewApplicationDefault(cfg *Config) *ApplicationDefault {
 	// default config
-	defaultRt := chi.NewRouter()
-	defaultDb := (*sql.DB)(nil)
-	defaultCfg := &ConfigApplicationDefault{
+	defaultConfig := &Config{
+		Db: (*mysql.Config)(nil),
 		Addr: ":8080",
 	}
 	if cfg != nil {
-		if cfg.DbCfg != nil {
-			defaultCfg.DbCfg = cfg.DbCfg
+		if cfg.Db != nil {
+			defaultConfig.Db = cfg.Db
 		}
 		if cfg.Addr != "" {
-			defaultCfg.Addr = cfg.Addr
+			defaultConfig.Addr = cfg.Addr
 		}
 	}
 
 	return &ApplicationDefault{
-		dbCfg: defaultCfg.DbCfg,
-		db: defaultDb,
-		rt: defaultRt,
-		addr: defaultCfg.Addr,
+		Config: defaultConfig,
+		rt: chi.NewRouter(),
+		db: (*sql.DB)(nil),
 	}
+}
+
+// Config is the configuration of ApplicationDefault
+type Config struct {
+	// database connection
+	Db *mysql.Config
+	// Addr is the address where the server will listen
+	Addr string
 }
 
 // ApplicationDefault is the default implementation of Application interface
 type ApplicationDefault struct {
-	// database connection
-	dbCfg *mysql.Config
+	// configuration of the application
+	*Config
+
+	// instances of the application
+	// - db is the database connection
 	db *sql.DB
-	// rt is the router using chi
+	// - rt is the router using chi
 	rt *chi.Mux
-	// addr is the address where the server will listen
-	addr string
 }
 
 // TearDown tears down the application
 // - close resources in reverse order
 func (a *ApplicationDefault) TearDown() (err error) {
 	// close database connection
-	defer func() {
-		if a.db != nil {
-			err = a.db.Close()
-			if err != nil {
-				err = fmt.Errorf("%w. %v", ErrApplicationTearDown, err)
-				return
-			}
+	if a.db != nil {
+		err = a.db.Close()
+		if err != nil {
+			err = fmt.Errorf("%w. %v", ErrApplicationTearDown, err)
+			return
 		}
-	}()
-
+		return
+	}
 	return
 }
 
 // SetUp sets up the application
 func (a *ApplicationDefault) SetUp() (err error) {
 	// dependencies
-	// - database connection
-	a.db, err = sql.Open("mysql", a.dbCfg.FormatDSN())
+	// - database: connection
+	a.db, err = sql.Open("mysql", a.Config.Db.FormatDSN())
+	if err != nil {
+		err = fmt.Errorf("%w. %v", ErrApplicationSetUp, err)
+		return
+	}
+	// - database: ping
+	err = a.db.Ping()
 	if err != nil {
 		err = fmt.Errorf("%w. %v", ErrApplicationSetUp, err)
 		return
@@ -109,7 +120,7 @@ func (a *ApplicationDefault) SetUp() (err error) {
 }
 // Run runs the application
 func (a *ApplicationDefault) Run() (err error) {
-	err = http.ListenAndServe(a.addr, a.rt)
+	err = http.ListenAndServe(a.Config.Addr, a.rt)
 	if err != nil {
 		err = fmt.Errorf("%w. %v", ErrApplicationRun, err)
 		return

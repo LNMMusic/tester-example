@@ -13,8 +13,8 @@ func main() {
 
 	// application
 	// - config
-	cfg := application.ConfigApplicationDefault{
-		DbCfg: &mysql.Config{
+	cfg := &application.Config{
+		Db: &mysql.Config{
 			User:                 "root",
 			Passwd:               "",
 			Net:                  "tcp",
@@ -24,9 +24,9 @@ func main() {
 		Addr: "localhost:8080",
 	}
 	// - new
-	app := application.NewApplicationDefault(&cfg)
+	app := application.NewApplicationDefault(cfg)
 	// - tear down
-	app.TearDown()
+	defer app.TearDown()
 	// - set up
 	if err := app.SetUp(); err != nil {
 		fmt.Println(err)
