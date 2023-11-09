@@ -6,8 +6,8 @@ import (
 
 	"github.com/LNMMusic/tester-example/internal/task"
 	"github.com/LNMMusic/tester-example/internal/task/storage"
-	"github.com/LNMMusic/tester-example/platform/web/request"
-	"github.com/LNMMusic/tester-example/platform/web/response"
+	"github.com/LNMMusic/tester-example/pkg/web/request"
+	"github.com/LNMMusic/tester-example/pkg/web/response"
 	"github.com/go-chi/chi/v5"
 )
 

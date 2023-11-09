@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  db:
+    container_name: mysql
+    build:
+      context: .
+      dockerfile: mysql.dockerfile
+    volumes:
+      - ./mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:tester_example_tasks_db}
+    ports:
+      - "3306:3306"
+    restart: always
+    networks:
+      - backend
+    
+  app:
+    container_name: golang-api
+    build:
+      context: .
+      dockerfile: app.dockerfile
+    environment:
+      DB_USER: ${DB_USER:root}
+      DB_PSWD: ${DB_PSWD:}
+      DB_ADDR: ${DB_ADDR:localhost:3306}
+      DB_NAME: ${DB_NAME:tester_example_tasks_db}
+    ports:
+      - "8080:8080"
+    command: "./bin/app"
+    restart: always
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge

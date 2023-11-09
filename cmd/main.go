@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/LNMMusic/tester-example/internal/application"
 	"github.com/go-sql-driver/mysql"
@@ -15,13 +16,13 @@ func main() {
 	// - config
 	cfg := &application.Config{
 		Db: &mysql.Config{
-			User:                 "root",
-			Passwd:               "",
+			User:                 os.Getenv("DB_USER"),
+			Passwd:               os.Getenv("DB_PSWD"),
 			Net:                  "tcp",
-			Addr:                 "localhost:3306",
-			DBName:               "tester_example_tasks_db",
+			Addr:                 os.Getenv("DB_ADDR"),
+			DBName:               os.Getenv("DB_NAME"),
 		},
-		Addr: "localhost:8080",
+		Addr: os.Getenv("SERVER_ADDR"),
 	}
 	// - new
 	app := application.NewApplicationDefault(cfg)
